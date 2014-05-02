@@ -1,127 +1,493 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-   <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-      <title>Overall Status Page</title>
-      <script type="text/javascript" src="Highcharts/js/jquery.min.js"></script>
-      <script type="text/javascript" src="Highcharts/js/highcharts.js"></script>
-    
-      <script type="text/javascript">
-         var chart;
-         $(document).ready(function () {
-             $(document).ready(function() {
-                 Highcharts.setOptions({
-                     global: {
-                         useUTC: false
-                     }
-                 });
-             
-                 var chart;
-                 $('#container').highcharts({
-                     chart: {
-                         type: 'spline',
-                         animation: Highcharts.svg,
-                         marginRight: 10,
-                         events: {
-                             load: function() {
-                                
-                                 // set up the updating of the chart each second
-                                 var status_200_series = this.series[0];
-                                 var status_500_series = this.series[1];
-                                 
-                                 setInterval(function() {
-                                    
-                                     $.ajax({
-                                         url: '/data-visualizer/hello',
-                                         type: 'GET',
-                                         async: true,
-                                         dataType: "json",
-                                         success: function (data) {
-                                   
-                                             for(var i in data){
-                                            	   console.info( data[i].code_200)
-                                                   var time = data[i].time;
-                                            	   status_200_series.addPoint([data[i].time, data[i].code_200], false, true);
-                                            	   status_500_series.addPoint([data[i].time, data[i].code_500], true, true);
-                                             }
-                                         
-                                         }
-                                     });
-                                  }, 1000);
-                            }
-                         }
-                     },
-                     title: {
-                         text: 'Responses by code'
-                     },
-                     xAxis: {
-                        min: (new Date()).getTime(),
-                         type: 'datetime',
-                         tickPixelInterval: 1000*60*10
-                     },
-                     yAxis: {
-                             plotLines: [{
-                             value: 0,
-                             width: 1,
-                             color: '#808080'
-                         }]
-                     },
-                     tooltip: {
-                         formatter: function() {
-                                 return '<b>'+ this.series.name +'</b><br/>'+
-                                 Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
-                                 Highcharts.numberFormat(this.y, 2);
-                         }
-                     },
-                     legend: {
-                         enabled: true
-                     },
-                     exporting: {
-                         enabled: false
-                     },
-                     series: [{
-                         name: '200',
-                         data: (function() {
-                                                          var data = [],
-                                 time = (new Date()).getTime(),
-                                 i;
-             
-                             for (i = -100; i <= 0; i++) {
-                                 data.push({
-                                     x: time + i * 1000,
-                                     y: 1
-                                 });
-                             }
-                             return data;
-                         })()
-                     },
-                     {
-                         name: '500',
-                         data: (function() {
-                             // generate an array of random data
-                             var data = [],
-                                 time = (new Date()).getTime(),
-                                 i;
-             
-                             for (i = -100; i <= 0; i++) {
-                                 data.push({
-                                     x: time + i * 1000,
-                                     y: Math.random()
-                                 });
-                             }
-                             return data;
-                         })()
-                     }
-                     
-                     ]
-                 });
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Highcharts Example</title>
+
+
+        <!-- 1. Add these JavaScript inclusions in the head of your page -->
+        <script type="text/javascript" src="Highcharts/js/jquery.min.js"></script>
+        <script type="text/javascript" src="Highcharts/js/highcharts.js"></script>
+
+        <!-- 1a) Optional: add a theme file -->
+        <!--
+            <script type="text/javascript" src="../js/themes/gray.js"></script>
+        -->
+
+        <!-- 1b) Optional: the exporting module -->
+        <script type="text/javascript" src="Highcharts/js/modules/exporting.js"></script>
+        
+        
+        
+
+
+        <!-- 2. Add the JavaScript to initialize the chart on document ready -->
+        <script type="text/javascript">
+        
+        var realTimeSCChart;
+        var realTimeSCStartTime;
+        
+        $(document).ready(function() {
+            
+            
+             $.ajax({
+                 url: '/data-visualizer/hello?all=all',
+                 dataType: 'json',
+                 success: function (data) {
+                	 realTimeSCStartTime =  data[0].time;
+               
+                 },
+                 cache: false,
+                 async:   false
              });
+            
+            
+
+            
+             realTimeSCChart = new Highcharts.Chart({
+                  chart: {
+                      renderTo: 'realTimeSC',
+                      type: 'spline',
+                      animation: Highcharts.svg, // don't animate in old IE
+                      marginRight: 10,
+                      events: {
+                          load: function() {
+          
+                              // set up the updating of the chart each second
+                              var series200 = this.series[0];
+                              var series500 = this.series[1];
+                              var series304 = this.series[2];
+                              var series503 = this.series[3];
+                              setInterval(function() {
+                            	  
+                            	  $.ajax({
+                                      url: '/data-visualizer/hello',
+                                      type: 'GET',
+                                      async: true,
+                                      dataType: "json",
+                                      success: function (data) {
+                                             for(var i in data){                                              
+                                            	 series200.addPoint([data[i].time, data[i].statusCodes.status_200], false, true);
+                                            	 series500.addPoint([data[i].time, data[i].statusCodes.status_500], false, true);
+                                            	 series304.addPoint([data[i].time, data[i].statusCodes.status_304], false, true);
+                                            	 series503.addPoint([data[i].time, data[i].statusCodes.status_503], true, true);
+                                         }
+                                      }
+                                  
+                                  });
+                            	  
+                                
+                              }, 1000);
+                          }
+                      }
              
+                  },
+                 
+             title: {
+                 text: 'Real time responses by code'
+             },
+             xAxis: {
+                 type: 'datetime',
+                 tickPixelInterval: 150
+             },
+             yAxis: {
+            	  min: 0,
+                 title: {
+                     text: ''
+                 },
+                 plotLines: [{
+                     value: 0,
+                     width: 1,
+                     color: '#808080'
+                 }]
+             },
+             tooltip: {
+                 formatter: function() {
+                         return '<b>'+ this.series.name +'</b><br/>'+
+                         Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
+                         Highcharts.numberFormat(this.y, 2);
+                 }
+             },
+             legend: {
+                 enabled: true
+             },
+             exporting: {
+                 enabled: false
+             },
+             series: [{
+                 name: '200',
+                 data: (function() {
+                     // generate an array of random data
+                     var data = [],
+                         time = (new Date()).getTime(),
+                         i;
+     
+                     for (i = -19; i <= 0; i++) {
+                         data.push({
+                             x: time + i * 1000,
+                             y: 0
+                         });
+                     }
+                     return data;
+                 })()
+             },{
+                 name: '500',
+                 data: (function() {
+                     // generate an array of random data
+                     var data = [],
+                         time = (new Date()).getTime(),
+                         i;
+     
+                     for (i = -19; i <= 0; i++) {
+                         data.push({
+                             x: time + i * 1000,
+                             y: 0
+                         });
+                     }
+                     return data;
+                 })()
+             },{
+                 name: '304',
+                 data: (function() {
+                     // generate an array of random data
+                     var data = [],
+                         time = (new Date()).getTime(),
+                         i;
+     
+                     for (i = -19; i <= 0; i++) {
+                         data.push({
+                             x: time + i * 1000,
+                             y: 0
+                         });
+                     }
+                     return data;
+                 })()
+             },{
+                 name: '503',
+                 data: (function() {
+                     // generate an array of random data
+                     var data = [],
+                         time = (new Date()).getTime(),
+                         i;
+     
+                     for (i = -19; i <= 0; i++) {
+                         data.push({
+                             x: time + i * 1000,
+                             y: 0
+                         });
+                     }
+                     return data;
+                 })()
+             }]
          });
-      </script>
-   </head>
-   <body>
-      <!-- 3. Add the container -->
-      <div id="container" style="width: 100%; height: 400px; margin: 0 auto"></div>
-   </body>
+     });
+
+        
+        /**
+         * Request data from the server, add it to the graph and set a timeout to request again
+         */
+         function getAggregateDatas() {
+            console.info("called")
+            
+             $.ajax({
+                 url: '/data-visualizer/rest/users',
+                 dataType: 'json',
+                 success: function (json) {
+                     var categories = [];
+                     var series200 = [];
+                     
+                     
+                     var data = [];
+                     for( var i = 0; i < json.length; i++ ) { 
+                         var j = json[i]; 
+                         for(var k in j) { 
+                             data.push({ 
+                                 name: k, 
+                                 y: j[k]
+                             }); 
+                         } 
+                      
+                      
+                     
+                       
+                         realTimeSCChart.series[0].setData(data);
+                     }
+                 },
+                 cache: false
+             });
+         }
+        
+        
+        
+        
+        
+        var aggregateScChart;
+        var aggregateScStartTime;
+        
+        $(document).ready(function() {
+            
+            
+             $.ajax({
+                 url: '/data-visualizer/hello?all=all',
+                 dataType: 'json',
+                 success: function (data) {
+                	 aggregateScStartTime =  data[0].time;
+               
+                 },
+                 cache: false,
+                 async:   false
+             });
+            
+            
+
+        	
+        	aggregateScChart = new Highcharts.Chart({
+                  chart: {
+                	  renderTo: 'aggregateSC',
+                      type: 'pie',
+                      events: {
+                          load: getAggregateData
+                      }
+                  },
+                  title: {
+                      text: 'Aggregate Results ' 
+                  },
+                  subtitle: {
+                      text: 'since ' + new Date(aggregateScStartTime).toUTCString()
+                  },
+                  xAxis: {
+                    
+                  },
+                  yAxis: {
+                      min: 0,
+                      title: {
+                          text: ''
+                      }
+                  },   legend: {
+                      enabled: true
+                  },
+                  tooltip: {
+                      headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                      pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                          '<td style="padding:0"><b>{point.y:.1f} </b></td></tr>',
+                      footerFormat: '</table>',
+                      shared: true,
+                      useHTML: true
+                  },
+                  plotOptions: {
+                      column: {
+                          pointPadding: 0.2,
+                          borderWidth: 0
+                      }
+                  },
+                  series: [{
+                	  name: 'Browser share',
+                                          data: []
+          
+                  }]
+              });
+        	
+        });
+        
+        
+        
+        /**
+         * Request data from the server, add it to the graph and set a timeout to request again
+         */
+         function getAggregateData() {
+            console.info("called")
+            
+             $.ajax({
+                 url: '/data-visualizer/rest/users',
+                 dataType: 'json',
+                 success: function (json) {
+                     var categories = [];
+                     var series200 = [];
+                     
+                     
+                     var data = [];
+                     for( var i = 0; i < json.length; i++ ) { 
+                         var j = json[i]; 
+                         for(var k in j) { 
+                             data.push({ 
+                                 name: k, 
+                                 y: j[k]
+                             }); 
+                         } 
+                      
+                      
+                     
+                       
+                         aggregateScChart.series[0].setData(data);
+                     }
+                 },
+                 cache: false
+             });
+         }
+        
+        
+
+            var chart;
+            var startTime;
+            $(document).ready(function() {
+            	
+            	
+            	 $.ajax({
+                     url: '/data-visualizer/hello?all=all',
+                     dataType: 'json',
+                     success: function (data) {
+                    	startTime =  data[0].time;
+                    	console.info(startTime)
+                     },
+                     cache: false,
+                     async:   false
+                 });
+            	
+            	
+            	
+            	
+                chart = new Highcharts.Chart({
+                   
+   
+                    chart: {
+                        renderTo: 'container',
+                        zoomType: 'x',
+                        events: {
+                            load: getData
+                        }
+                    },
+                    title: {
+                        text: 'Status Codes per 2s '  
+                    },
+                    subtitle: {
+                        text: document.ontouchstart === undefined ?
+                           'since ' +  new Date(startTime).toUTCString():
+                            ''
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        minRange: 2*1000// fourteen days
+                    },
+                    yAxis: {
+                    	 min: 0,
+                        title: {
+                            text: ''
+                        }
+                    },
+                    legend: {
+                        enabled: true
+                    },
+                    plotOptions: {
+                        area: {
+                            fillColor: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1},
+                                stops: [
+                                    [0, Highcharts.getOptions().colors[0]],
+                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                                ]
+                            },
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+            
+                    series: [{
+                        type: 'area',
+                        name: '200',
+                        pointInterval: 2*1000,
+                        pointStart: startTime,
+                        data: []
+                    },{
+                        type: 'area',
+                        name: '500',
+                        pointInterval: 2*1000,
+                        pointStart: startTime,
+                        data: []
+                    },{
+                        type: 'area',
+                        name: '503',
+                        pointInterval: 2*1000,
+                        pointStart: startTime,
+                        data: []
+                    },{
+                        type: 'area',
+                        name: '304',
+                        pointInterval: 2*1000,
+                        pointStart: startTime,
+                        data: []
+                    }]
+
+                    
+                    
+                    
+                  });
+            });     
+            
+            
+            /**
+             * Request data from the server, add it to the graph and set a timeout to request again
+             */
+             function getData() {
+                console.info("called")
+                
+                 $.ajax({
+                     url: '/data-visualizer/hello?all=all',
+                     dataType: 'json',
+                     success: function (data) {
+                         var categories = [];
+                         var seriesData = [];
+                         var seriesData3= [];
+                         var seriesData503= [];
+                         var seriesData304= [];
+                         
+                         $.each(data, function (i, e) {
+                             categories.push(i);
+                             seriesData.push(e.statusCodes.status_200);
+                             seriesData3.push(e.statusCodes.status_500);
+                             seriesData503.push(e.statusCodes.status_503);
+                             seriesData304.push(e.statusCodes.status_304);
+                          
+                         });
+                         
+                         
+                         chart.series[0].setData(seriesData);
+                         chart.series[1].setData(seriesData3);
+                         chart.series[2].setData(seriesData503);
+                         chart.series[3].setData(seriesData304);
+                    
+                     },
+                     cache: false
+                 });
+             }
+            
+            
+            
+
+        </script>
+
+    </head>
+    <body>
+
+     
+
+    <!-- 3. Add the container -->
+        <div id="realTimeSC" style="width: 60%; height: 400px; margin: 0 auto; margin-bottom:50px; float:left"></div>
+        
+            <div id="aggregateSC" style="width: 40%; height: 400px; margin: 0 auto; margin-bottom:50px; float:right"></div>
+        
+           <!-- 3. Add the container -->
+        <div id="container" style="width: 100%; height: 400px; margin: 0 auto"></div>
+        
+
+
+
+    </body>
 </html>
