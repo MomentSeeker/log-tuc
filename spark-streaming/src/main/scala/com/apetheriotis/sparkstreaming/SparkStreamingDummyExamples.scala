@@ -10,7 +10,7 @@ import kafka.serializer.StringDecoder
 /**
  * @author Angelos Petheriotis
  */
-object App {
+object SparkStreamingDummyExamples {
 
 
   def main(args: Array[String]) {

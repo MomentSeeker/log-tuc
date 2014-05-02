@@ -11,10 +11,6 @@
     <name>${project.artifactId}</name>
     <description>Scala app that produces sample logs and sends them to Kafka</description>
 
-
-
-
-
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -51,8 +47,6 @@
                 <configuration>
                     <useFile>false</useFile>
                     <disableXmlReport>true</disableXmlReport>
-                    <!-- If you have classpath issue like NoDefClassError,... -->
-                    <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
                     <includes>
                         <include>**/*Test.*</include>
                         <include>**/*Suite.*</include>
@@ -108,7 +102,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>
-                                            com.apetheriotis.logproducer.logproducer.LogProducer
+                                            com.apetheriotis.logproducer.LogProducer
                                         </Main-Class>
                                     </manifestEntries>
                                 </transformer>
@@ -117,8 +111,47 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
-
     </build>
+
+    <!-- Profiles configuration -->
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <build.profile.id>dev</build.profile.id>
+            </properties>
+            <build>
+                <filters>
+                    <filter>profiles/${build.profile.id}/application.properties</filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <filtering>true</filtering>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <build.profile.id>prod</build.profile.id>
+            </properties>
+            <build>
+                <filters>
+                    <filter>profiles/${build.profile.id}/application.properties</filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <filtering>true</filtering>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
 </project>
