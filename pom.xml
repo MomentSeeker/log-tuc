@@ -59,6 +59,7 @@
         <spark.version>0.9.0-incubating</spark.version>
         <hadoop.version>2.2.0</hadoop.version>
         <scala.config.version>1.2.1</scala.config.version>
+        <casbah.version>2.7.0</casbah.version>
     </properties>
 
     <dependencies>

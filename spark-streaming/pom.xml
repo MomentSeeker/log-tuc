@@ -13,6 +13,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>casbah_2.10</artifactId>
+            <version>${casbah.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>${spark.version}</version>
@@ -130,7 +135,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>
-                                            com.apetheriotis.sparkstreaming.SparkStreamingDummyExamples
+                                            com.apetheriotis.sparkstreaming.StatusCodeCounter
                                         </Main-Class>
                                     </manifestEntries>
                                 </transformer>

@@ -35,6 +35,8 @@ object StatusCodeReader extends AbstractHdfsReader {
    */
   private def mergeParts(time: Long, files: List[String]) {
 
+    println("Merging Status Codes for: " + time )
+
     // Setup entry
     val entry = MongoDBObject("time" -> time)
     var statusCodeAggregated: Map[String, Long] = Map(

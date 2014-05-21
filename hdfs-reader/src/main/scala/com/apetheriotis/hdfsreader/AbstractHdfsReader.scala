@@ -34,7 +34,7 @@ trait AbstractHdfsReader {
   private def listFilesForJob(path: String): (Boolean, Long, List[String]) = {
 
     // The time the job run
-    val timeJobRun = path.toString.substring(path.indexOf("-") + 1).toLong
+    val timeJobRun = path.toString.substring(path.indexOf("job-") + 4).toLong
     // Indicates whether job is completed or still writes data
     var isComplete = true
     val files = fileSystem.listFiles(new Path(path), true)
@@ -68,17 +68,25 @@ trait AbstractHdfsReader {
 
     // Get parent folder for each file
     var parentFolders = Set[String]()
-    val files = fileSystem.listFiles(new Path(path), true)
-    while (files.hasNext) {
-      parentFolders.+=(files.next().getPath.getParent.toString)
-    }
 
-    // Foreach parent folder get all files if completed
-    for (parentFolder <- parentFolders) {
-      val rs = listFilesForJob(parentFolder)
-      if (rs._1) perJobFiles += (rs._2 -> rs._3)
+    try {
+      val files = fileSystem.listFiles(new Path(path), true)
+
+      while (files.hasNext) {
+        parentFolders.+=(files.next().getPath.getParent.toString)
+      }
+
+      // Foreach parent folder get all files if completed
+      for (parentFolder <- parentFolders) {
+        val rs = listFilesForJob(parentFolder)
+        if (rs._1) perJobFiles += (rs._2 -> rs._3)
+      }
+      (parentFolders, perJobFiles)
+
+    } catch {
+      case e: Exception =>
+        (parentFolders, perJobFiles)
     }
-    (parentFolders, perJobFiles)
   }
 
   /**

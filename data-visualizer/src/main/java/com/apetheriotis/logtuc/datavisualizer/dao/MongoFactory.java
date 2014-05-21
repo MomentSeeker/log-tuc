@@ -1,14 +1,14 @@
 package com.apetheriotis.logtuc.datavisualizer.dao;
 
-import java.net.UnknownHostException;
-
-import org.mongodb.morphia.Morphia;
-
-import com.apetheriotis.logtuc.datavisualizer.dao.utils.PropertyFileUtils;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import org.mongodb.morphia.Morphia;
+
+import java.net.UnknownHostException;
 
 public class MongoFactory {
 
@@ -18,13 +18,14 @@ public class MongoFactory {
     private static Morphia morphia;
 
     public static Mongo getMongo() {
+
+        Config envConf = ConfigFactory.load();
         try {
             if (mongo == null) {
                 MongoClientOptions options = MongoClientOptions.builder()
                         .connectTimeout(1000 * 60).socketKeepAlive(true)
                         .build();
-                mongo = new MongoClient(new ServerAddress(PropertyFileUtils
-                        .getInstance().getMongoIp()), options);
+                mongo = new MongoClient(new ServerAddress(envConf.getString("mongoip")), options);
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();

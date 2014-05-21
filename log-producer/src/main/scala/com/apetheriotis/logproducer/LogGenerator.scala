@@ -179,10 +179,15 @@ object LogGenerator {
     r => statusCodesWeighted.insertAll(statusCodesWeighted.size, List.fill(r._2)(r._1))
   })
 
-  // Generate sample user uds
+  // Generate sample user ids
   var userIdsTemp = new ListBuffer[String]()
-  (1 to 100).foreach(_ => userIdsTemp += Random.alphanumeric.take(15).mkString)
+  (1 to 10000).foreach(_ => userIdsTemp += Random.alphanumeric.take(15).mkString)
   val userIds = userIdsTemp.toList
+
+  // Generate sample instance ids
+  var instanceIdsTemp = new ListBuffer[String]()
+  (1 to 100).foreach(_ => instanceIdsTemp += Random.alphanumeric.take(15).mkString)
+  val instanceIds = instanceIdsTemp.toList
 
   /**
    * Constructs a sample resource url like "/api/v1/json/user/profile"
@@ -200,7 +205,6 @@ object LogGenerator {
     statusCodesWeighted.toList(Random.nextInt(10000))
   }
 
-
   /**
    * Generates a random ip in the range (100-150).(100-150).(0-256).(0-256)
    * @return the generated IP
@@ -208,7 +212,6 @@ object LogGenerator {
   def getIp(): String = {
     (Random.nextInt(50) + 100) + "." + (Random.nextInt(50) + 100) + "." + Random.nextInt(256) + "." + Random.nextInt(256)
   }
-
 
   /**
    * Generates a random response time between (100-399)
@@ -231,9 +234,8 @@ object LogGenerator {
    * @return the user id
    */
   def getUserId(): String = {
-    userIds(Random.nextInt(10))
+    userIds(Random.nextInt(10000))
   }
-
 
   /**
    * Queries for a random country
@@ -243,11 +245,18 @@ object LogGenerator {
     COUNTRIES(Random.nextInt(118)).trim()
   }
 
+  /**
+   * Queries for a random instance id
+   * @return the instance id
+   */
+  def getInstanceId(): String = {
+    instanceIds(Random.nextInt(100))
+  }
 
   def getLogLine(): String = {
     // ip___resource___statusCode___responseTime___userAgent
     getIp()+ "___" + getResource() + "___" + getStatusCode() + "___" + getResponseTime() + "___" +
-      getUserAgent() + "___" + getUserId() + "___" + getCountry()
+      getUserAgent() + "___" + getUserId() + "___" + getCountry() + "___" + getInstanceId()
   }
 
 
