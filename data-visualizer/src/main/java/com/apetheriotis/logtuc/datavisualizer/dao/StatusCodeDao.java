@@ -1,8 +1,10 @@
 package com.apetheriotis.logtuc.datavisualizer.dao;
 
-import java.util.List;
-
-import org.bson.types.ObjectId;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import com.apetheriotis.logtuc.datavisualizer.domain.StatusCode;
 
@@ -12,45 +14,64 @@ import com.apetheriotis.logtuc.datavisualizer.domain.StatusCode;
  * @author Angelos Petheriotis
  * 
  */
-public class StatusCodeDao extends AbstractDao<StatusCode, ObjectId> {
+public class StatusCodeDao extends AbstractDao {
 
     /**
-     * Queries for all non read {@link StatusCode} before given date. Returned
-     * data will be marked as read, and will be saved back to datastore
+     * Queries for latest status code data
      * 
-     * @param time
-     *            the time to query for {@link StatusCode} before
-     * @return a List with {@link StatusCode}, if any
+     * @return {@link StatusCode} that contains data for every status code
      */
-    public List<StatusCode> getNonReadValuesBefore(Long time) {
-
-        List<StatusCode> nonRead = getDs().find(getEntityClazz())
-                .filter("time <", time).filter("isRead", false).asList();
-
-        if (nonRead.isEmpty()) {
-            return nonRead;
+    public StatusCode getLatestStatusCodeData() {
+        StatusCode sc = new StatusCode();
+        sc.setTime(Long.valueOf(jedis.get("last_rdd_time")));
+        Set<String> latestKeys = jedis.keys("sc_latest*");
+        for (String latestDateKey : latestKeys) {
+            Long value = Long.valueOf(jedis.get(latestDateKey));
+            sc.getStatusCodes().put("status_" + latestDateKey.split("_")[2],
+                    value);
         }
-
-        // Mark as read
-        for (StatusCode sc : nonRead) {
-            sc.setIsRead(true);
-        }
-        save(nonRead);
-        return nonRead;
-
+        return sc;
     }
 
     /**
-     * Queries for {@link StatusCode} between two times
+     * Queries for summed/total status code data
      * 
-     * @param startTime
-     *            the start time
-     * @param stopTime
-     *            the stop time
-     * @return a List with {@link StatusCode}, if any
+     * @return {@link StatusCode} that contains data for every status code
      */
-    public List<StatusCode> getBetween(Long startTime, Long stopTime) {
-        return getDs().find(getEntityClazz()).filter("time >", startTime)
-                .filter("time <", stopTime).asList();
+    public StatusCode getSummedStatusCodeData() {
+        StatusCode sc = new StatusCode();
+        sc.setTime(Long.valueOf(jedis.get("last_rdd_time")));
+        Set<String> latestKeys = jedis.keys("sc_total*");
+        for (String latestDateKey : latestKeys) {
+            Long value = Long.valueOf(jedis.get(latestDateKey));
+            sc.getStatusCodes().put("status_" + latestDateKey.split("_")[2],
+                    value);
+        }
+        return sc;
     }
+
+    /**
+     * Queries for all status code data
+     * 
+     * @return a list with all status code for all time sorted by time
+     */
+    public Collection<StatusCode> getAll() {
+        HashMap<Long, StatusCode> scsMapped = new HashMap<>();
+        Set<String> keys = jedis.keys("sc_interval*");
+        for (String key : keys) {
+            Long value = Long.valueOf(jedis.get(key));
+            Long time = Long.valueOf(key.split("_")[2]);
+            StatusCode sc = scsMapped.get(time);
+            if (sc == null) {
+                sc = new StatusCode();
+                sc.setTime(time);
+            }
+            sc.getStatusCodes().put("status_" + key.split("_")[3], value);
+            scsMapped.put(time, sc);
+        }
+
+        Map<Long, StatusCode> treeMap = new TreeMap<Long, StatusCode>(scsMapped);
+        return treeMap.values();
+    }
+
 }

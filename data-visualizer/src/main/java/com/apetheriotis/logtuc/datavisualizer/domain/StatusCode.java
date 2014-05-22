@@ -1,11 +1,7 @@
 package com.apetheriotis.logtuc.datavisualizer.domain;
 
+import java.util.HashMap;
 import java.util.Map;
-
-import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Indexed;
 
 /**
  * Holds results for a specific time interval (2s) for status codes
@@ -13,23 +9,13 @@ import org.mongodb.morphia.annotations.Indexed;
  * @author Angelos Petheriotis
  * 
  */
-@Entity("statusCodes")
 public class StatusCode {
 
-    @Id
-    ObjectId id;
-    @Indexed
     private Long time;
-    @Indexed
-    private Boolean isRead;
     private Map<String, Long> statusCodes;
 
-    public Boolean getIsRead() {
-        return isRead;
-    }
-
-    public void setIsRead(Boolean isRead) {
-        this.isRead = isRead;
+    public StatusCode() {
+        statusCodes = new HashMap<>();
     }
 
     public Map<String, Long> getStatusCodes() {

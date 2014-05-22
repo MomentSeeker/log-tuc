@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Load Balancer Dashboard</title>
+    <script type="text/javascript" src="../highcharts/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../highcharts/js/highcharts.js"></script>
+
+    <script type="text/javascript">
+    
+        <!--------------------->
+        <!--  REAL TIME CHART -->
+        <!--------------------->
+        var chart;
+        var startTime;
+        $(document).ready(function () {
+
+            $.ajax({
+                url: '/data-visualizer/rest/load_balancer/latest',
+                dataType: 'json',
+                success: function (data) {
+                    startTime = data.time;
+                },
+                cache: false,
+                async: false
+            });
+
+            chart = new Highcharts.Chart({
+                chart: {
+                	type: 'column',
+                    renderTo: 'container',
+                    zoomType: 'x',
+                    events: {
+		                load: function () {
+		
+		                    setInterval(function () {
+		                        $.ajax({
+		                            url: '/data-visualizer/rest/load_balancer/latest',
+		                            dataType: 'json',
+		                            success: function (data) {
+		                                var categories = [];
+		                                var seriesData = [];
+		                                chart.options.subtitle.text = 'for ' + new Date(data.time).toUTCString();
+		                                $.each(data.instancesAggregated, function (i, e) {
+		                                    categories.push(i.substr(i.length - 5)+"...");
+		                                    seriesData.push(e);
+		                                });
+		                                var theDiv = document.getElementById("instanceIds");
+                                        theDiv.innerHTML = "";
+		                                chart.series[0].setData(seriesData);
+		                                chart.xAxis[0].setCategories(categories);   
+		                                var index =0;
+		                                $.each(data.instancesAggregatedOutsiders, function (i, e) {
+		                                    if (e){
+		                                         chart.series[0].data[index].update({
+		                                             marker:{
+		                                                 color: 'red'
+		                                             }
+		                                         });
+		                                         theDiv.innerHTML += "</br>"+i; 
+		                                    }else{
+		                                    	 chart.series[0].data[index].update({
+                                                     marker:{
+                                                         color: 'black'
+                                                     }
+                                                 });
+		                                    }
+		                                    index++;
+		                                });
+		                            },
+		                            cache: false
+		                        });
+		                    }, 5000);
+		                }
+		            }
+                },
+                title: {
+                    text: 'Deviation from average of processed requests per server'
+                },
+                subtitle: {
+                    text: document.ontouchstart === undefined ?
+                        'for ' + new Date(startTime).toUTCString() : ''
+                },
+                credits: {
+                    enabled: false
+                },
+                xAxis: {
+                    type: 'category',
+                    labels: {
+                        rotation: -90,
+                        style: {
+                            fontSize: '13px',
+                            fontFamily: 'Verdana, sans-serif'
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Deviation'
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                tooltip: {
+                   enabled:false
+                },
+                plotOptions: {
+                    area: {
+                        fillColor: {
+                            linearGradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 0,
+                                y2: 1
+                            },
+                            stops: [
+                                [0, Highcharts.getOptions().colors[0]],
+                                [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                            ]
+                        },
+                        marker: {
+                            radius: 2
+                        },
+                        lineWidth: 1,
+                       
+                        threshold: null
+                    }
+                },
+                series: [{
+                    name: 'Population',
+                    dataLabels: {
+                        enabled: false,
+                        rotation: -90,
+                        color: '#FFFFFF',
+                        align: 'right',
+                        x: 4,
+                        y: 10,
+                        style: {
+                            fontSize: '13px',
+                            fontFamily: 'Verdana, sans-serif',
+                            textShadow: '0 0 3px black'
+                        }
+                    }
+                }]
+            });
+        });
+
+
+    </script>
+
+</head>
+
+<body>
+    <div id="container" style="width: 100%; height: 400px; margin: 0 auto"></div>
+    <div id="instanceIds" style="width: 100%; height: 400px; margin: 0 auto"></div>
+</body>
+
+</html>

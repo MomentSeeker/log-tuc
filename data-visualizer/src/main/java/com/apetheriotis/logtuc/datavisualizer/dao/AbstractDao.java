@@ -1,49 +1,19 @@
 package com.apetheriotis.logtuc.datavisualizer.dao;
 
-import java.util.Iterator;
-import java.util.List;
+import redis.clients.jedis.Jedis;
 
-import org.mongodb.morphia.Key;
-import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.dao.BasicDAO;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
-import com.mongodb.Mongo;
-import com.mongodb.WriteConcern;
+public class AbstractDao {
 
-public class AbstractDao<T, K> extends BasicDAO<T, K> {
+    protected Jedis jedis = null;
 
     public AbstractDao() {
-        super(MongoFactory.getMongo(), MongoFactory.getMorphia(),
-                MongoFactory.DEFAULT_DB_NAME);
-        ensureIndexes();
+        Config envConf = ConfigFactory.load();
+        jedis = new Jedis(envConf.getString("jedisIp"));
+        jedis.connect();
 
-    }
-
-    public AbstractDao(Mongo mongo, Morphia morphia, String dbName) {
-        super(mongo, morphia, dbName);
-        ensureIndexes();
-    }
-
-    public AbstractDao(String dbName) {
-        super(MongoFactory.getMongo(), MongoFactory.getMorphia(), dbName);
-        ensureIndexes();
-    }
-
-    public T getByProperty(String propertyName, Object propertyValue) {
-        return getDs().find(getEntityClazz())
-                .filter(propertyName, propertyValue).get();
-    }
-
-    public Iterator<T> iterateAll() {
-        return getDs().find(getEntityClazz()).iterator();
-    }
-
-    public Iterable<Key<T>> save(List<T> entities) {
-        return getDs().save(entities);
-    }
-
-    public Iterable<Key<T>> save(List<T> entities, WriteConcern writeConcern) {
-        return getDs().save(entities, writeConcern);
     }
 
 }
