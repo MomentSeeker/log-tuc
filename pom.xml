@@ -13,7 +13,6 @@
     <modules>
         <module>spark-streaming</module>
         <module>log-producer</module>
-        <module>hdfs-reader</module>
         <module>data-visualizer</module>
     </modules>
 
