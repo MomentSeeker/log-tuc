@@ -3,10 +3,12 @@ package com.apetheriotis.logproducer
 import scala.util.Random
 import scala.collection.mutable.ListBuffer
 
+/**
+ * Creates tomcat like web app logs
+ */
+object WebAppLogGenerator {
 
-object LogGenerator {
-
-  var COUNTRIES = List(" LY, Libya ",
+  private val COUNTRIES = List(" LY, Libya ",
     " MA, Morocco ", " MC, Monaco ", " MD, Moldova ", " ME, Montenegro ", " MF, Saint Martin ", " MG, Madagascar ",
     " MH, Marshall Islands ", " MK, F.Y.R.O.M.(Macedonia) ", " ML, Mali ", " MM, Myanmar ", " MN, Mongolia ",
     " MO, Macau ", " MP, Northern Mariana Islands ", " MQ, Martinique ", " MR, Mauritania ", " MS, Montserrat ",
@@ -33,7 +35,7 @@ object LogGenerator {
     " WS, Samoa ", " XK, Kosovo * ", " YE, Yemen ", " YT, Mayotte ", " YU, Serbia and Montenegro(former Yugoslavia) ",
     " ZA, South Africa ", " ZM, Zambia ", " (ZR, Zaire), See CD Congo, Democratic Republic ", " ZW, Zimbabwe")
 
-  var USER_AGENTS = List(
+  private val USER_AGENTS = List(
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)",
     "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)",
@@ -136,7 +138,7 @@ object LogGenerator {
     "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11"
   )
 
-  val RESOURCES = Map(
+  private val RESOURCES = Map(
     "/user" -> 15,
     "/user/login" -> 5,
     "/user/logout" -> 5,
@@ -157,7 +159,7 @@ object LogGenerator {
     "/infopoint/geocode" -> 10
   )
 
-  val STATUS_CODES = Map(
+  private val STATUS_CODES = Map(
     200 -> 9500,
     304 -> 50,
     404 -> 50,
@@ -168,32 +170,32 @@ object LogGenerator {
   )
 
   // Convert to a weighted list of resources
-  var resourcesWeighted = new ListBuffer[String]()
+  private val resourcesWeighted = new ListBuffer[String]()
   RESOURCES.foreach({
     r => resourcesWeighted.insertAll(resourcesWeighted.size, List.fill(r._2)(r._1))
   })
 
   // Convert to a weighted list of status codes
-  var statusCodesWeighted = new ListBuffer[Int]()
+  private val statusCodesWeighted = new ListBuffer[Int]()
   STATUS_CODES.foreach({
     r => statusCodesWeighted.insertAll(statusCodesWeighted.size, List.fill(r._2)(r._1))
   })
 
   // Generate sample user ids
-  var userIdsTemp = new ListBuffer[String]()
+  private var userIdsTemp = new ListBuffer[String]()
   (1 to 10000).foreach(_ => userIdsTemp += Random.alphanumeric.take(15).mkString)
-  val userIds = userIdsTemp.toList
+  private val userIds = userIdsTemp.toList
 
   // Generate sample instance ids
-  var instanceIdsTemp = new ListBuffer[String]()
-  (1 to 100).foreach(_ => instanceIdsTemp += Random.alphanumeric.take(15).mkString)
-  val instanceIds = instanceIdsTemp.toList
+  private var instanceIdsTemp = new ListBuffer[String]()
+  for (i <- 1 to 100) instanceIdsTemp += "web-server-" + i
+  private val instanceIds = instanceIdsTemp.toList
 
   /**
    * Constructs a sample resource url like "/api/v1/json/user/profile"
    * @return the URL
    */
-  def getResource(): String = {
+  private def createResource(): String = {
     "/api/v1/json" + resourcesWeighted.toList(Random.nextInt(100))
   }
 
@@ -201,7 +203,7 @@ object LogGenerator {
    * Creates a sample response code
    * @return the code
    */
-  def getStatusCode(): Int = {
+  private def createStatusCode(): Int = {
     statusCodesWeighted.toList(Random.nextInt(10000))
   }
 
@@ -209,7 +211,7 @@ object LogGenerator {
    * Generates a random ip in the range (100-150).(100-150).(0-256).(0-256)
    * @return the generated IP
    */
-  def getIp(): String = {
+  private def createIP(): String = {
     (Random.nextInt(50) + 100) + "." + (Random.nextInt(50) + 100) + "." + Random.nextInt(256) + "." + Random.nextInt(256)
   }
 
@@ -217,7 +219,7 @@ object LogGenerator {
    * Generates a random response time between (100-399)
    * @return the generated response time
    */
-  def getResponseTime(): Int = {
+  private def createResponseTime(): Int = {
     (Random.nextInt(3) + 1) * 100 + Random.nextInt(99)
   }
 
@@ -225,7 +227,7 @@ object LogGenerator {
    * Queries for a random user agent
    * @return the user agent
    */
-  def getUserAgent(): String = {
+  private def createUserAgent(): String = {
     USER_AGENTS(Random.nextInt(100))
   }
 
@@ -233,7 +235,7 @@ object LogGenerator {
    * Queries for a random user id
    * @return the user id
    */
-  def getUserId(): String = {
+  private def createUserId(): String = {
     userIds(Random.nextInt(10000))
   }
 
@@ -241,7 +243,7 @@ object LogGenerator {
    * Queries for a random country
    * @return the country
    */
-  def getCountry(): String = {
+  private def createCountry(): String = {
     COUNTRIES(Random.nextInt(118)).trim()
   }
 
@@ -249,14 +251,14 @@ object LogGenerator {
    * Queries for a random instance id
    * @return the instance id
    */
-  def getInstanceId(): String = {
+  private def createWebServerName(): String = {
     instanceIds(Random.nextInt(100))
   }
 
-  def getLogLine(): String = {
+  def createWebServerLog(): String = {
     // ip___resource___statusCode___responseTime___userAgent
-    getIp()+ "___" + getResource() + "___" + getStatusCode() + "___" + getResponseTime() + "___" +
-      getUserAgent() + "___" + getUserId() + "___" + getCountry() + "___" + getInstanceId()
+    createIP() + "___" + createResource() + "___" + createStatusCode() + "___" + createResponseTime() + "___" +
+      createUserAgent() + "___" + createUserId() + "___" + createCountry() + "___" + createWebServerName()
   }
 
 
