@@ -38,10 +38,10 @@ object DBLogGenerator {
     val serverNames = getServersNames()
     var time = new Date()
     // time___initMessage___clientName#hostname
-    val startMessage = time.toString + "___[initandlisten] connection accepted from___" + serverNames._2 + "#" + serverNames._1
+    val startMessage = time.toString + "___[initandlisten] connection accepted from___" + serverNames._2 + "___" + serverNames._1
     // time___stopMessage___clientName#hostname
     time.setTime(time.getTime + new Random().nextInt(50))
-    val stopMessage = time.toString + "___[initandlisten] end connection from___" + serverNames._2 + "#" + serverNames._1
+    val stopMessage = time.toString + "___end connection from___" + serverNames._2 + "___" + serverNames._1
     (startMessage, stopMessage)
   }
 

@@ -19,9 +19,6 @@ import com.apetheriotis.logtuc.datavisualizer.domain.StatusCode;
 @Path("/status_codes")
 public class StatusCodeService {
 
-    private static final String[] AVAILABLE_SC_CODES = { "status_200",
-            "status_500", "status_503", "status_304", "status_501" };
-
     private final StatusCodeDao dao = new StatusCodeDao();
 
     /**
@@ -59,48 +56,5 @@ public class StatusCodeService {
     public Collection<StatusCode> getAllStatusCodes() {
         return dao.getAll();
     }
-
-    //
-    //        // Get all status codes
-    //        List<StatusCode> data = dao.getBetween(0L, new Date().getTime());
-    //
-    //        // Sum all status code per category
-    //        Map<String, Long> statusCodesSummed = new HashMap<>();
-    //        for (StatusCode sc : data) {
-    //            for (String scCode : AVAILABLE_SC_CODES) {
-    //                Long aggregateSCData = statusCodesSummed.get(scCode);
-    //                if (aggregateSCData == null) {
-    //                    aggregateSCData = 0L;
-    //                }
-    //                if (sc.getStatusCodes() == null) {
-    //                    statusCodesSummed.put(scCode, aggregateSCData);
-    //                    continue;
-    //                }
-    //                Long scData = sc.getStatusCodes().get(scCode);
-    //                if (scData != null) {
-    //                    aggregateSCData += scData;
-    //                }
-    //                statusCodesSummed.put(scCode, aggregateSCData);
-    //            }
-    //        }
-    //
-    //        // Convert summed status code map, into a list of map entries.
-    //        // This response can be easily deserialized by highcharts
-    //        List<Map<String, Long>> statusCodeListed = new ArrayList<>();
-    //        Iterator<Entry<String, Long>> it = statusCodesSummed.entrySet()
-    //                .iterator();
-    //        while (it.hasNext()) {
-    //            Entry<String, Long> pairs = it.next();
-    //            Map<String, Long> tempMap = new HashMap<>();
-    //            tempMap.put(pairs.getKey(), pairs.getValue());
-    //            statusCodeListed.add(tempMap);
-    //        }
-    //
-    //        return statusCodeListed;
-    //
-    //    }
-
-
-
 
 }

@@ -1,5 +1,5 @@
 // Get JSON data
-treeJSON = d3.json("/data-visualizer/rest/instance_ids/cluster_connections", function(error, treeData) {
+treeJSON = d3.json("/data-visualizer/rest/db/cluster_connections", function(error, treeData) {
 
     // Calculate total nodes, max label length
     var totalNodes = 0;
@@ -63,7 +63,7 @@ treeJSON = d3.json("/data-visualizer/rest/instance_ids/cluster_connections", fun
     }
     // Sort the tree initially incase the JSON isn't in a sorted order.
     sortTree();
-
+    // 
     // TODO: Pan function, can be better implemented.
 
     function pan(domNode, direction) {
