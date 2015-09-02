@@ -1,15 +1,62 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <artifactId>LogTuc</artifactId>
-        <groupId>com.apetheriotis</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <groupId>com.apetheriotis.streaming</groupId>
+        <artifactId>log-tuc</artifactId>
+        <version>1.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>log-producer</artifactId>
     <name>${project.artifactId}</name>
     <description>Scala app that produces sample logs and sends them to Kafka</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+        <scala.tools.version>2.10</scala.tools.version>
+        <scala.version>2.10.1</scala.version>
+        <kafka.version>0.8.1</kafka.version>
+        <spark.version>0.9.0-incubating</spark.version>
+        <scala.config.version>1.2.1</scala.config.version>
+    </properties>
+
+    <dependencies>
+        <!-- Scala -->
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${scala.config.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+        <!-- Kafka -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.10</artifactId>
+            <version>${kafka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.jmx</groupId>
+                    <artifactId>jmxri</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jdmk</groupId>
+                    <artifactId>jmxtools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.jms</groupId>
+                    <artifactId>jms</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
 
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
@@ -102,7 +149,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>
-                                            com.apetheriotis.logproducer.LogProducer
+                                            com.apetheriotis.streaming.logtuc.producer.LogProducer
                                         </Main-Class>
                                     </manifestEntries>
                                 </transformer>
@@ -114,44 +161,5 @@
         </plugins>
     </build>
 
-    <!-- Profiles configuration -->
-    <profiles>
-        <profile>
-            <id>dev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <build.profile.id>dev</build.profile.id>
-            </properties>
-            <build>
-                <filters>
-                    <filter>profiles/${build.profile.id}/application.properties</filter>
-                </filters>
-                <resources>
-                    <resource>
-                        <filtering>true</filtering>
-                        <directory>src/main/resources</directory>
-                    </resource>
-                </resources>
-            </build>
-        </profile>
-        <profile>
-            <id>prod</id>
-            <properties>
-                <build.profile.id>prod</build.profile.id>
-            </properties>
-            <build>
-                <filters>
-                    <filter>profiles/${build.profile.id}/application.properties</filter>
-                </filters>
-                <resources>
-                    <resource>
-                        <filtering>true</filtering>
-                        <directory>src/main/resources</directory>
-                    </resource>
-                </resources>
-            </build>
-        </profile>
-    </profiles>
+
 </project>

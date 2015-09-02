@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Status Codes Dashboard</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript" src="http://code.highcharts.com/modules/exporting.js"></script>
+    <script type="text/javascript">
+    
+        <!--------------------->
+        <!-- REAL TIME CHART -->
+        <!--------------------->
+        var realTimeSCChart;
+        var realTimeSCStartTime;
+        $(document).ready(function () {
+
+            <!-- Load start time of data -->
+            $.ajax({
+                url: '/api/v1/status_codes_estimations/latest',
+                dataType: 'json',
+                success: function (data) {
+                    realTimeSCStartTime = data.time;
+                },
+                cache: false,
+                async: false
+            });
+
+
+            realTimeSCChart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'realTimeSC',
+                    type: 'spline',
+                    animation: Highcharts.svg,
+                    marginRight: 10,
+                    events: {
+                        load: function () {
+
+                            var series200 = this.series[0];
+                            var series500 = this.series[1];
+                            var series304 = this.series[2];
+                            var series503 = this.series[3];
+                            
+                            setInterval(function () {
+                                $.ajax({
+                                    url: '/api/v1/status_codes_estimations/latest',
+                                    type: 'GET',
+                                    async: true,
+                                    dataType: "json",
+                                    success: function (data) {
+                                    console.log(data.time)
+                                    console.log( data.statusCodes.status_200)
+                                       series200.addPoint([data.time, data.statusCodes.status_200], false, true);
+                                       series500.addPoint([data.time, data.statusCodes.status_500], false, true);
+                                       series304.addPoint([data.time, data.statusCodes.status_304], false, true);
+                                       series503.addPoint([data.time, data.statusCodes.status_503], true, true);
+                                    }
+
+                                });
+
+
+                            }, 1000);
+                        }
+                    }
+
+                },
+
+                title: {
+                    text: 'Real time responses by code'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    tickPixelInterval: 150
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: ''
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: true
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [{
+                    name: '200',
+                    data: (function () {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -19; i <= 0; i++) {
+                            data.push({
+                                x: time + i * 1000,
+                                y: 0
+                            });
+                        }
+                        return data;
+                    })()
+                }, {
+                    name: '500',
+                    data: (function () {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -19; i <= 0; i++) {
+                            data.push({
+                                x: time + i * 1000,
+                                y: 0
+                            });
+                        }
+                        return data;
+                    })()
+                }, {
+                    name: '304',
+                    data: (function () {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -19; i <= 0; i++) {
+                            data.push({
+                                x: time + i * 1000,
+                                y: 0
+                            });
+                        }
+                        return data;
+                    })()
+                }, {
+                    name: '503',
+                    data: (function () {
+                        // generate an array of random data
+                        var data = [],
+                            time = (new Date()).getTime(),
+                            i;
+
+                        for (i = -19; i <= 0; i++) {
+                            data.push({
+                                x: time + i * 1000,
+                                y: 0
+                            });
+                        }
+                        return data;
+                    })()
+                }]
+            });
+        });
+
+
+        <!--------------------->
+        <!-- PIE DATA CHART  -->
+        <!--------------------->
+        var aggregateScChart;
+        $(document).ready(function () {
+        	
+        	
+
+            aggregateScChart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'aggregateSC',
+                    type: 'pie',
+                    events: {
+                        load: getAggregateData
+                    }
+                },
+                title: {
+                    text: 'Aggregate Results '
+                },
+                xAxis: {
+
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: ''
+                    }
+                },
+                legend: {
+                    enabled: true
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                        '<td style="padding:0"><b>{point.y:.1f} </b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: [{
+                    name: 'Status Codes',
+                    data: []
+
+                }]
+            });
+
+        });
+        
+        function getAggregateData() {
+           
+            $.ajax({
+                url: '/api/v1/status_codes_estimations/aggregated',
+                dataType: 'json',
+                success: function (json) {
+                	var data = [];
+                	data.push({name: "200",y: json.statusCodes.status_200});
+                    data.push({name: "401",y: json.statusCodes.status_401});
+                    data.push({name: "404",y: json.statusCodes.status_404});
+                    data.push({name: "500",y: json.statusCodes.status_500});
+                    data.push({name: "403",y: json.statusCodes.status_403});
+                    data.push({name: "304",y: json.statusCodes.status_304});
+                    aggregateScChart.series[0].setData(data);
+                },
+                cache: false
+            });
+        }
+
+
+    </script>
+
+</head>
+
+<body>
+<div id="realTimeSC"
+     style="width: 100%; height: 400px; margin: 0 auto; margin-bottom: 50px; float: left "></div>
+<div id="aggregateSC"
+     style="width: 100%; height: 400px; margin: 0 auto; margin-bottom: 50px; float: right"></div>
+</body>
+
+</html>
